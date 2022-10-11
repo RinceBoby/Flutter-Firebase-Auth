@@ -7,6 +7,8 @@ import 'package:firebase_init/view/screens/loginScreen.dart';
 import 'package:firebase_init/view/widgets/cupertinoTextField.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_signin_button/button_list.dart';
+import 'package:flutter_signin_button/button_view.dart';
 
 class RegisterScreen extends StatefulWidget {
   RegisterScreen({super.key});
@@ -130,7 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       //To_Login to homescreen if it's signed in//
                       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
                         builder: (context) {
-                          return const HomeScreen();
+                          return HomeScreen();
                         },
                       ), (route) => false);
                     }
@@ -167,6 +169,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   );
                 },
                 child: const Text("Already have an account? Login here..."),
+              ),
+
+              kHeight20,
+              const Divider(thickness: 2),
+              kHeight20,
+
+              SignInButton(
+                Buttons.Google,
+                onPressed: () async {
+                  setState(() {
+                    loading = true;
+                  });
+                  await AuthService().googleSignIn();
+                  setState(() {
+                    loading = false;
+                  });
+                },
               ),
             ],
           ),
