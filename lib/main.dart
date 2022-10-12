@@ -32,8 +32,8 @@ class MyApp extends StatelessWidget {
         builder: (context, AsyncSnapshot snapshot) {
           if (snapshot.hasData) {
             return 
-            UploadImageScreen();
-            // HomeScreen(snapshot.data);
+            // UploadImageScreen();
+            HomeScreen(snapshot.data);
           }
           return RegisterScreen();
         },

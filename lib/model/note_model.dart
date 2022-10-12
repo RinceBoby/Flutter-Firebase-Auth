@@ -6,12 +6,14 @@ class NoteModel {
   String description;
   Timestamp date;
   String userId;
+  String image;
   NoteModel({
     required this.id,
     required this.title,
     required this.description,
     required this.date,
     required this.userId,
+    required this.image,
   });
 
   factory NoteModel.fromJson(DocumentSnapshot snapshot) {
@@ -21,6 +23,7 @@ class NoteModel {
       description: snapshot['description'],
       date: snapshot['date'],
       userId: snapshot['userId'],
+      image: snapshot['image'],
     );
   }
 }

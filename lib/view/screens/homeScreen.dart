@@ -2,11 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_init/model/note_model.dart';
 import 'package:firebase_init/service/auth_service.dart';
+import 'package:firebase_init/view/constants/spaces/dimensions.dart';
 import 'package:firebase_init/view/constants/styles/colors.dart';
 import 'package:firebase_init/view/screens/add_note.dart';
 import 'package:firebase_init/view/screens/update_note.dart';
+import 'package:firebase_init/view/screens/upload_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class HomeScreen extends StatelessWidget {
   User user;
@@ -57,6 +60,15 @@ class HomeScreen extends StatelessWidget {
                         vertical: 10,
                       ),
                       child: ListTile(
+                        leading: CachedNetworkImage(
+                          imageUrl: note.image,
+                          placeholder: (context, url) =>
+                              Image.asset('images/placeholder.jpg'),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
+                          width: 70,
+                          fit: BoxFit.cover,
+                        ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 10,
                           vertical: 5,
@@ -80,7 +92,7 @@ class HomeScreen extends StatelessWidget {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>  UpdateNoteScreen(note: note),
+                            builder: (context) => UpdateNoteScreen(note: note),
                           ),
                         ),
                       ),
@@ -99,17 +111,36 @@ class HomeScreen extends StatelessWidget {
             );
           },
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AddNoteScreen(user: user),
-              ),
-            );
-          },
-          backgroundColor: Colors.orangeAccent,
-          child: const Icon(Icons.add),
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddNoteScreen(user: user),
+                  ),
+                );
+              },
+              backgroundColor: Colors.orangeAccent,
+              child: const Icon(Icons.add),
+            ),
+            kWidth10,
+            //<<<<<Image_Firestore>>>>>//
+            FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UploadImageScreen(),
+                  ),
+                );
+              },
+              backgroundColor: Colors.orangeAccent,
+              child: const Icon(Icons.image_outlined),
+            ),
+          ],
         ),
       ),
     );

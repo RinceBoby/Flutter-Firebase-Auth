@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_init/service/firestore_service.dart';
 import 'package:firebase_init/view/constants/spaces/dimensions.dart';
 import 'package:firebase_init/view/constants/styles/colors.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AddNoteScreen extends StatefulWidget {
   AddNoteScreen({super.key, required this.user});
@@ -14,10 +18,26 @@ class AddNoteScreen extends StatefulWidget {
 }
 
 class _AddNoteScreenState extends State<AddNoteScreen> {
-  
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   bool loading = false;
+
+  //<<<<<Pick_Image>>>>>//
+  File? imageFile;
+  String? fileName;
+
+  Future uploadImage() async {
+    final picker = ImagePicker();
+    final XFile? pickedImage =
+        await picker.pickImage(source: ImageSource.gallery);
+    if (pickedImage == null) {
+      return null;
+    }
+    setState(() {
+      fileName = pickedImage.name;
+      imageFile = File(pickedImage.path);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +55,21 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                InkWell(
+                  onTap: () => uploadImage(),
+                  child: Container(
+                    height: 150,
+                    child: imageFile == null
+                        ? const Center(
+                            child: Icon(
+                            Icons.image_outlined,
+                            size: 100,
+                          ))
+                        : Center(
+                            child: Image.file(imageFile!),
+                          ),
+                  ),
+                ),
                 kHeight30,
                 //<<<<<Title>>>>>//
                 const Text(
@@ -97,7 +132,8 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                         : const Text("Add Note"),
                     onPressed: () async {
                       if (titleController.text.isEmpty ||
-                          descriptionController.text.isEmpty) {
+                          descriptionController.text.isEmpty ||
+                          imageFile == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text("All fields are required"),
@@ -108,10 +144,22 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                         setState(() {
                           loading = true;
                         });
+
+                        //<<<<<Image>>>>>//
+                        String imageUrl = await FirebaseStorage.instance
+                            .ref(fileName)
+                            .putFile(imageFile!)
+                            .then((result) {
+                          return result.ref.getDownloadURL();
+                        });
+                        print(imageUrl);
+
+                        //<<<<<Inserting_Note>>>>>//
                         await FirestoreService().createNote(
                           titleController.text,
                           descriptionController.text,
                           widget.user.uid,
+                          imageUrl,
                         );
                         setState(() {
                           loading = false;
