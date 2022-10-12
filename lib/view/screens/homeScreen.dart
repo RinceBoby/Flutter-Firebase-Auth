@@ -1,8 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_init/model/note_model.dart';
 import 'package:firebase_init/service/auth_service.dart';
+import 'package:firebase_init/view/constants/styles/colors.dart';
+import 'package:firebase_init/view/screens/add_note.dart';
+import 'package:firebase_init/view/screens/update_note.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
+  User user;
+  HomeScreen(this.user, {super.key});
+
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   @override
@@ -27,78 +36,80 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
-        body: Container(
-          width: size.width,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              //
-              //<<<<<Add_Data_to_firestore>>>>>//
-              ElevatedButton(
-                onPressed: () async {
-                  CollectionReference users = firestore.collection('users');
-                  // //Add with own document id//
-                  // await users.add({
-                  //   'name': 'Rince',
-                  // });
-
-                  //To give a specific document id//
-                  await users
-                      .doc("fluttere123")
-                      .set({'name': 'Goolge Flutter'});
-                },
-                child: const Text("Add data to firestore"),
+        body: StreamBuilder(
+          stream: FirebaseFirestore.instance
+              .collection('notes')
+              .where('userId', isEqualTo: user.uid)
+              .snapshots(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.hasData) {
+              if (snapshot.data.docs.length > 0) {
+                return ListView.builder(
+                  itemCount: snapshot.data.docs.length,
+                  itemBuilder: (context, index) {
+                    NoteModel note =
+                        NoteModel.fromJson(snapshot.data.docs[index]);
+                    return Card(
+                      color: Colors.greenAccent,
+                      elevation: 5,
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        title: Padding(
+                          padding: const EdgeInsets.only(bottom: 5),
+                          child: Text(
+                            note.title,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                        subtitle: Text(
+                          note.description,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>  UpdateNoteScreen(note: note),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }
+              return const Center(
+                child: Text("No notes to show"),
+              );
+            }
+            return const Center(
+              child: CupertinoActivityIndicator(
+                color: kRed,
               ),
-
-              //<<<<<Read_data_from_firestore>>>>>//
-              ElevatedButton(
-                onPressed: () async {
-                  CollectionReference users = firestore.collection('users');
-                  // // To get all documents//
-                  // QuerySnapshot allResults = await users.get();
-                  // allResults.docs.forEach(
-                  //   (DocumentSnapshot result) {
-                  //     print(result.data());
-                  //   },
-                  // );
-
-                  //To get a specific document//
-                  DocumentSnapshot result =
-                      await users.doc('fluttere123').get();
-                  print(result.data());
-
-                  // //Stream_Builder//
-                  // users.doc('flutter123').snapshots().listen(
-                  //   (result) {
-                  //     result.data();
-                  //   },
-                  // );
-                },
-                child: const Text("Read data from firestore"),
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddNoteScreen(user: user),
               ),
-
-              //<<<<<Update_Data_In_Firestore>>>>>//
-              ElevatedButton(
-                onPressed: () async {
-                  await firestore.collection('users').doc('flutter123').update({
-                    'name': 'flutter firebase',
-                  });
-                },
-                child: const Text("Update data in Firestore"),
-              ),
-
-              //<<<<<Delete_Data_From_Firestore>>>>>//
-              ElevatedButton(
-                onPressed: () async {
-                  await firestore
-                      .collection('users')
-                      .doc('flutter123')                      .delete();
-                },
-                child: const Text("Delete data from Firestore"),
-              ),
-            ],
-          ),
+            );
+          },
+          backgroundColor: Colors.orangeAccent,
+          child: const Icon(Icons.add),
         ),
       ),
     );

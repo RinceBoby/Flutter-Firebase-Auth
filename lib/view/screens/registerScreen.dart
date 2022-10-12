@@ -132,7 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       //To_Login to homescreen if it's signed in//
                       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
                         builder: (context) {
-                          return HomeScreen();
+                          return HomeScreen(response);
                         },
                       ), (route) => false);
                     }
