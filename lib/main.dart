@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_init/service/auth_service.dart';
 import 'package:firebase_init/view/screens/homeScreen.dart';
 import 'package:firebase_init/view/screens/registerScreen.dart';
+import 'package:firebase_init/view/screens/upload_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -30,7 +31,9 @@ class MyApp extends StatelessWidget {
         stream: AuthService().firebaseAuth.authStateChanges(),
         builder: (context, AsyncSnapshot snapshot) {
           if (snapshot.hasData) {
-            return HomeScreen(snapshot.data);
+            return 
+            UploadImageScreen();
+            // HomeScreen(snapshot.data);
           }
           return RegisterScreen();
         },
